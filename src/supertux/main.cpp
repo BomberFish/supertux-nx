@@ -14,6 +14,13 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#warning Remove this soon
+#ifdef SWITCH
+#define SP(fmt, ...) printf(fmt, ##__VA_ARGS__)
+#else
+#define SP(fmt, ...)
+#endif
+
 #include "supertux/main.hpp"
 
 #include <config.h>
@@ -25,6 +32,11 @@
 #include <SDL_ttf.h>
 #include <physfs.h>
 #include <tinygettext/log.hpp>
+
+#ifdef SWITCH
+#define FMT_HEADER_ONLY
+#endif
+
 #include <fmt/format.h>
 extern "C" {
 #include <findlocale.h>
@@ -95,6 +107,8 @@ static Timelog s_timelog;
 ConfigSubsystem::ConfigSubsystem() :
   m_config()
 {
+  SP("ConfigSubsystem\n");
+
   g_config = &m_config;
   try {
     m_config.load();
@@ -113,6 +127,7 @@ ConfigSubsystem::ConfigSubsystem() :
 
 ConfigSubsystem::~ConfigSubsystem()
 {
+  SP("ConfigSubsystem::~ConfigSubsystem\n");
   try
   {
     m_config.save();
@@ -149,6 +164,7 @@ Main::Main() :
 void
 Main::init_tinygettext()
 {
+  SP("Main::init_tinygettext\n");
   g_dictionary_manager.reset(new tinygettext::DictionaryManager(std::make_unique<PhysFSFileSystem>(), "UTF-8"));
 
   tinygettext::Log::set_log_info_callback(log_info_callback);
@@ -180,6 +196,7 @@ PhysfsSubsystem::PhysfsSubsystem(const char* argv0,
   m_datadir(),
   m_userdir()
 {
+  SP("PhysfsSubsystem\n");
   if (!PHYSFS_init(argv0))
   {
     std::stringstream msg;
@@ -198,6 +215,22 @@ PhysfsSubsystem::PhysfsSubsystem(const char* argv0,
 
 void PhysfsSubsystem::find_mount_datadir()
 {
+  SP("find and mount datadir\n");
+  SP("bruh moment\n");
+#if SWITCH
+  SP("access(): %d\n", access("sdmc:/supertux-data", F_OK));
+  SP("access(): %d\n", access("sdmc:/", F_OK));
+
+  m_datadir = "sdmc:/supertux-data";
+  SP("doin the mount now!!!\n");
+  if (!PHYSFS_mount(m_datadir.c_str(), nullptr, 1))
+  {
+    SP("ERR: %s", physfsutil::get_last_error());
+    log_warning << "Couldn't add '" << m_datadir << "' to PhysFS searchpath: " << physfsutil::get_last_error() << std::endl;
+  }
+  SP("mount haz been done!!\n");
+  return;
+#endif
 #ifndef __EMSCRIPTEN__
   if (const char* assetpack = getenv("ANDROID_ASSET_PACK_PATH"))
   {
@@ -277,12 +310,18 @@ void PhysfsSubsystem::find_mount_datadir()
     overriden in the search path by the user directory or add-ons. */
 void PhysfsSubsystem::remount_datadir_static() const
 {
+  SP("remount datadir\n");
   add_data_to_search_path("images/credits");
+  SP("levels\n");
   add_data_to_search_path("levels");
+  SP("locale\n");
   add_data_to_search_path("locale");
+  SP("scripts\n");
   add_data_to_search_path("scripts");
+  SP("shader\n");
   add_data_to_search_path("shader");
 
+  SP("moar levels");
   // Re-mount levels from the user directory
   const std::string userdir_levels = FileSystem::join(m_userdir, "levels");
   if (FileSystem::exists(userdir_levels) &&
@@ -294,7 +333,12 @@ void PhysfsSubsystem::remount_datadir_static() const
 
 void PhysfsSubsystem::add_data_to_search_path(const std::string& dir) const
 {
-#ifndef __EMSCRIPTEN__
+#ifdef SWITCH
+  if (!PHYSFS_mount(FileSystem::join(m_datadir, dir).c_str(), dir.c_str(), 0))
+  {
+    log_warning << "Couldn't add '" << m_datadir << "/" << dir << "' to PhysFS searchpath: " << physfsutil::get_last_error() << std::endl;
+  }
+#elif !defined(__EMSCRIPTEN__)
   if (!PHYSFS_mount(FileSystem::join(std::filesystem::canonical(m_datadir).string(), dir).c_str(), dir.c_str(), 0))
   {
     log_warning << "Couldn't add '" << m_datadir << "/" << dir << "' to PhysFS searchpath: " << physfsutil::get_last_error() << std::endl;
@@ -309,6 +353,10 @@ void PhysfsSubsystem::add_data_to_search_path(const std::string& dir) const
 
 void PhysfsSubsystem::find_mount_userdir()
 {
+  SP("find and mount userdir\n");
+  #ifdef SWITCH
+  m_userdir = "sdmc:/switch/supertux-saves";
+  #else
   if (m_forced_userdir)
   {
     m_userdir = *m_forced_userdir;
@@ -321,6 +369,7 @@ void PhysfsSubsystem::find_mount_userdir()
   {
     m_userdir = PHYSFS_getPrefDir("SuperTux","supertux2");
   }
+  #endif
 //Kept for backwards-compatability only, hence the silence
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -331,7 +380,7 @@ std::string physfs_userdir = PHYSFS_getUserDir();
 #pragma GCC diagnostic pop
 #endif
 
-#ifndef __HAIKU__
+#if !defined(__HAIKU__) || !defined(SWITCH)
 #ifdef _WIN32
 std::string olduserdir = FileSystem::join(physfs_userdir, PACKAGE_NAME);
 #else
@@ -376,6 +425,8 @@ if (FileSystem::is_directory(olduserdir)) {
 
 #ifdef EMSCRIPTEN
   m_userdir = "/home/web_user/.local/share/supertux2/";
+#elif SWITCH
+  m_userdir = "sdmc:/supertux-saves";
 #endif
 
   if (!FileSystem::is_directory(m_userdir))
@@ -409,6 +460,7 @@ if (FileSystem::is_directory(olduserdir)) {
 
 void PhysfsSubsystem::print_search_path()
 {
+  SP("print search path\n");
   const char* writedir = PHYSFS_getWriteDir();
   log_info << "PhysfsWriteDir: " << (writedir ? writedir : "(null)") << std::endl;
   log_info << "PhysfsSearchPath:" << std::endl;
@@ -422,11 +474,14 @@ void PhysfsSubsystem::print_search_path()
 
 PhysfsSubsystem::~PhysfsSubsystem()
 {
+  SP("PhysfsSubsystem::~PhysfsSubsystem\n");
   PHYSFS_deinit();
 }
 
 SDLSubsystem::SDLSubsystem()
 {
+  SP("SDLSubsystem\n");
+
   Uint32 flags = SDL_INIT_TIMER | SDL_INIT_VIDEO;
 #ifndef UBUNTU_TOUCH
   flags |= SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER;
@@ -452,6 +507,8 @@ SDLSubsystem::SDLSubsystem()
 
 SDLSubsystem::~SDLSubsystem()
 {
+  SP("SDLSubsystem::~SDLSubsystem\n");
+
   TTF_Quit();
   SDL_Quit();
 }
@@ -459,6 +516,7 @@ SDLSubsystem::~SDLSubsystem()
 void
 Main::init_video()
 {
+  SP("Main::init_video\n");
   VideoSystem::current()->set_title("SuperTux " PACKAGE_VERSION);
 
   const char* icon_fname = "images/engine/icons/supertux-256x256.png";
@@ -500,6 +558,7 @@ Main::resave(const std::string& input_filename, const std::string& output_filena
 void
 Main::launch_game(const CommandLineArguments& args)
 {
+  SP("Main::launch_game\n");
   s_timelog.log("addons");
   m_addon_manager.reset(new AddonManager("addons", g_config->addons));
 
@@ -520,7 +579,7 @@ Main::launch_game(const CommandLineArguments& args)
 
   s_timelog.log("commandline");
 
-#ifndef EMSCRIPTEN
+#if !defined(EMSCRIPTEN) || !defined(SWITCH)
   auto video = g_config->video;
   if (args.resave && *args.resave) {
     if (args.video) {
@@ -533,7 +592,7 @@ Main::launch_game(const CommandLineArguments& args)
 
   m_video_system = VideoSystem::create(video);
 #else
-  // Force SDL for WASM builds, as OpenGL is reportedly slow on some devices
+  // Force SDL for WASM and NX builds, as OpenGL is reportedly slow on some devices
   m_video_system = VideoSystem::create(VideoSystem::VIDEO_SDL);
 #endif
   init_video();
@@ -645,19 +704,21 @@ Main::launch_game(const CommandLineArguments& args)
     }
     else
     {
+        SP("#################### push title screen ####################\n");
       m_screen_manager->push_screen(std::make_unique<TitleScreen>(*m_savegame, g_config->is_christmas()));
-
+      SP("#################### push title screen end ####################\n");
       if (g_config->do_release_check)
         release_check();
     }
   }
-
+  SP("#################### run ####################\n");
   m_screen_manager->run();
 }
 
 int
 Main::run(int argc, char** argv)
 {
+  SP("#################### run ####################\n");
   // First and foremost, set error handlers (to print stack trace on SIGSEGV, etc.)
   ErrorHandler::set_handlers();
 
@@ -695,28 +756,32 @@ Main::run(int argc, char** argv)
 #endif
 
   int result = 0;
-
   try
   {
     CommandLineArguments args;
     try
     {
+      SP("parsing args\n");
       args.parse_args(argc, argv);
       g_log_level = args.get_log_level();
     }
     catch(const std::exception& err)
     {
+      SP("ERR: %s", err.what());
       std::cout << "Error: " << err.what() << std::endl;
       return EXIT_FAILURE;
     }
 
+    SP("#################### physfs ####################\n");
     m_physfs_subsystem.reset(new PhysfsSubsystem(argv[0], args.datadir, args.userdir));
     m_physfs_subsystem->print_search_path();
 
+    SP("#################### config ####################\n");
     s_timelog.log("config");
     m_config_subsystem.reset(new ConfigSubsystem());
     args.merge_into(*g_config);
 
+    SP("#################### tinygettext #################### \n");
     s_timelog.log("tinygettext");
     init_tinygettext();
     switch (args.get_action())
@@ -738,12 +803,14 @@ Main::run(int argc, char** argv)
         return 0;
 
       default:
+        SP("#################### launch_game ####################\n");
         launch_game(args);
         break;
     }
   }
   catch(const std::exception& e)
   {
+    SP("ERR: %s\n", e.what());
     ErrorHandler::error_dialog_exception(e.what());
     result = 1;
   }
@@ -752,6 +819,7 @@ Main::run(int argc, char** argv)
     /*
     log_fatal << "Unexpected exception" << std::endl;
     */
+    SP("unexpected exception\n");
     ErrorHandler::error_dialog_exception();
     result = 1;
   }

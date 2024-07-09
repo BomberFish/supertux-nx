@@ -25,6 +25,10 @@
 #include "supertux/globals.hpp"
 #include "util/gettext.hpp"
 
+#ifdef SWITCH
+#define FMT_HEADER_ONLY
+#endif
+
 #include <fmt/format.h>
 
 KeyboardMenu::KeyboardMenu(InputManager& input_manager, int player_id) :
@@ -115,7 +119,10 @@ void
 KeyboardMenu::menu_action(MenuItem& item)
 {
   if (item.get_id() >= 0 && item.get_id() < static_cast<int>(Control::CONTROLCOUNT)) {
+    #warning remove
+    printf("itemcontrolfield start");
     ItemControlField* itemcf = dynamic_cast<ItemControlField*>(&item);
+    printf("itemcontrolfield end");
     if (!itemcf) {
       return;
     }

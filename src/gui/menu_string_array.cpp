@@ -16,6 +16,10 @@
 
 #include "gui/menu_string_array.hpp"
 
+#ifdef SWITCH
+#define FMT_HEADER_ONLY
+#endif
+
 #include <fmt/format.h>
 
 #include "gui/menu_item.hpp"

@@ -26,6 +26,10 @@
 #include <emscripten/html5.h>
 #endif
 
+#ifdef SWITCH
+#define FMT_HEADER_ONLY
+#endif
+
 #include <fmt/format.h>
 
 #include "zip_manager.hpp"

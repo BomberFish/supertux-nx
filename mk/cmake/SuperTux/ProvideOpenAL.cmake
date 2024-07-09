@@ -1,4 +1,16 @@
-if(NOT EMSCRIPTEN)
+if(EMSCRIPTEN)
+  add_library(LibOpenAL INTERFACE IMPORTED)
+  set_target_properties(LibOpenAL PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/mk/emscripten/AL"
+    INTERFACE_LINK_LIBRARIES "-lopenal"
+    )
+elseif(SWITCH)
+  add_library(LibOpenAL INTERFACE IMPORTED)
+  set_target_properties(LibOpenAL PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${DEVKITPRO}/portlibs/switch/include/AL"
+    INTERFACE_LINK_LIBRARIES "-lopenal"
+  )
+else()
   if(VCPKG_BUILD)
     find_package(OpenAL CONFIG REQUIRED)
     add_library(LibOpenAL ALIAS OpenAL::OpenAL)
@@ -11,12 +23,6 @@ if(NOT EMSCRIPTEN)
       INTERFACE_INCLUDE_DIRECTORIES "${OPENAL_INCLUDE_DIR}"
       )
   endif()
-else()
-  add_library(LibOpenAL INTERFACE IMPORTED)
-  set_target_properties(LibOpenAL PROPERTIES
-    INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/mk/emscripten/AL"
-    INTERFACE_LINK_LIBRARIES "-lopenal"
-    )
 endif()
 
 mark_as_advanced(

@@ -17,6 +17,9 @@
 #include "editor/scroller_widget.hpp"
 
 #include <math.h>
+#ifdef SWITCH
+# define M_E		2.7182818284590452354	/* e */
+#endif
 
 #include "editor/editor.hpp"
 #include "video/drawing_context.hpp"

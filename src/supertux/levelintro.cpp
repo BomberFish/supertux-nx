@@ -32,6 +32,10 @@
 #include "util/log.hpp"
 #include "video/compositor.hpp"
 
+#ifdef SWITCH
+#define FMT_HEADER_ONLY
+#endif
+
 #include <fmt/format.h>
 
 

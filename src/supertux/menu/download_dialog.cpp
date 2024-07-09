@@ -18,6 +18,11 @@
 #include "supertux/menu/download_dialog.hpp"
 
 #include <sstream>
+
+#ifdef SWITCH
+#define FMT_HEADER_ONLY
+#endif
+
 #include <fmt/format.h>
 
 #include "addon/downloader.hpp"

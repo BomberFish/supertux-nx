@@ -16,6 +16,10 @@
 
 #include "supertux/command_line_arguments.hpp"
 
+#ifdef SWITCH
+#define FMT_HEADER_ONLY
+#endif
+
 #include <fmt/format.h>
 #include <config.h>
 #include <physfs.h>
@@ -146,6 +150,9 @@ CommandLineArguments::print_version() const
 void
 CommandLineArguments::parse_args(int argc, char** argv)
 {
+  #if SWITCH
+    m_log_level = LOG_DEBUG;
+  #endif
   for (int i = 1; i < argc; ++i)
   {
     std::string arg = argv[i];

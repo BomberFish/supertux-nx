@@ -18,6 +18,11 @@
 #include "addon/addon.hpp"
 
 #include <optional>
+
+#ifdef SWITCH
+#define FMT_HEADER_ONLY
+#endif
+
 #include <fmt/format.h>
 #include <sstream>
 

@@ -279,9 +279,11 @@ TitleScreen::set_frame(const std::string& image)
 IntegrationStatus
 TitleScreen::get_status() const
 {
+  #ifndef SWITCH
   IntegrationStatus status;
   status.m_details.push_back("In main menu");
   return status;
+  #endif
 }
 
 /* EOF */

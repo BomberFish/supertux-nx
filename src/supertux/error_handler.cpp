@@ -28,6 +28,10 @@
 
 #include <SDL.h>
 
+#ifdef SWITCH
+#include <switch.h>
+#endif
+
 #include <version.h>
 
 #include "util/file_system.hpp"
@@ -212,6 +216,7 @@ ErrorHandler::error_dialog_crash(const std::string& stacktrace)
 
   std::cerr << msg << "\n" << stacktrace << std::endl;
 
+  #ifndef SWITCH
   SDL_MessageBoxButtonData btns[] = {
     {
       0, // flags
@@ -285,22 +290,25 @@ ErrorHandler::error_dialog_crash(const std::string& stacktrace)
     default:
       break;
   }
+  #else
+  #warning please remove extra dbg stuffs
+  printf("%s\n", msg);
+  printf("%s\n", stacktrace.c_str());
+  #endif
 }
 
 void
 ErrorHandler::error_dialog_exception(const std::string& exception)
 {
   std::stringstream stream;
-
   stream << "SuperTux has encountered a fatal exception!";
-
   if (!exception.empty())
   {
     stream << "\n\n" << exception;
   }
 
   std::string msg = stream.str();
-
+#ifndef SWITCH
   SDL_MessageBoxButtonData btns[] = {
 #ifdef WIN32
     {
@@ -339,6 +347,10 @@ ErrorHandler::error_dialog_exception(const std::string& exception)
            << "/console.err";
     FileSystem::open_path(stream.str());
   }
+#endif
+#else
+  #warning please remove extra dbg stuffs
+  printf("%s\n", msg.c_str());
 #endif
 }
 

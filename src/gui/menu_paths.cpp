@@ -24,6 +24,10 @@
 #include "object/path_object.hpp"
 #include "supertux/sector.hpp"
 
+#ifdef SWITCH
+#define FMT_HEADER_ONLY
+#endif
+
 #include <fmt/format.h>
 
 auto on_select = [](const std::string& path, PathObject& target, const std::string& path_ref) {

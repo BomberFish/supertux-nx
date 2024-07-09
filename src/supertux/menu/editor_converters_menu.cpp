@@ -16,6 +16,10 @@
 
 #include "supertux/menu/editor_converters_menu.hpp"
 
+#ifdef SWITCH
+#define FMT_HEADER_ONLY
+#endif
+
 #include <fmt/format.h>
 
 #include "editor/editor.hpp"

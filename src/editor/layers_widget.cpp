@@ -39,6 +39,10 @@
 #include "video/video_system.hpp"
 #include "video/viewport.hpp"
 
+#ifdef SWITCH
+#define FMT_HEADER_ONLY
+#endif
+
 #include <fmt/format.h>
 
 EditorLayersWidget::EditorLayersWidget(Editor& editor) :

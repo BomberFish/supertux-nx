@@ -17,6 +17,10 @@
 
 #include "gui/menu_object_select.hpp"
 
+#ifdef SWITCH
+#define FMT_HEADER_ONLY
+#endif
+
 #include <fmt/format.h>
 
 #include "editor/object_menu.hpp"

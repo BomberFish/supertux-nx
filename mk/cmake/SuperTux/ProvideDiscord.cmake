@@ -3,8 +3,8 @@
 # Some privay-concerned users or free software package managers might need an option to compile ST without the Discord integration.
 option(ENABLE_DISCORD "Compile the Discord integration" OFF)
 
-if(EMSCRIPTEN)
-  set(ENABLE_DISCORD OFF CACHE BOOL "Emscripten does not support Discord integration" FORCE)
+if(EMSCRIPTEN OR SWITCH)
+  set(ENABLE_DISCORD OFF CACHE BOOL "Emscripten and Nintendo Switch do not support Discord integration" FORCE)
 endif()
 
 if(NOT ENABLE_DISCORD)

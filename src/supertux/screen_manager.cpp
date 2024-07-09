@@ -660,11 +660,20 @@ static void g_loop_iter() {
 }
 #endif
 
+#warning Remove this soon
+#ifdef SWITCH
+#define SP(fmt, ...) printf(fmt, ##__VA_ARGS__)
+#else
+#define SP(fmt, ...)
+#endif
+
+
 void
 ScreenManager::run()
 {
+    SP("########################### ScreenManager::run() ###########################\n");
   Integration::init_all();
-
+  SP("########################### handle_screen_switch() ###########################\n");
   handle_screen_switch();
 #ifdef __EMSCRIPTEN__
   emscripten_set_main_loop(g_loop_iter, -1, 1);

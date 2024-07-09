@@ -7,6 +7,12 @@ endif()
 option(GLBINDING_ENABLED "Use glbinding instead of GLEW" OFF)
 option(GLBINDING_DEBUG_OUTPUT "Enable glbinding debug output for each called OpenGL function" OFF)
 
+if(SWITCH)
+  set(ENABLE_OPENGL OFF)
+  set(ENABLE_OPENGLES2 OFF)
+  set(OPENGL_FOUND FALSE)
+endif()
+
 if(ENABLE_OPENGL)
   if(ENABLE_OPENGLES2)
     message(STATUS "Checking for OpenGLES2")

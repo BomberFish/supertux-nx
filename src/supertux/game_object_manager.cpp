@@ -169,8 +169,10 @@ GameObjectManager::add_object_scripting(const std::string& class_name, const std
   auto obj = GameObjectFactory::instance().create(class_name, pos,
                                                   direction.empty() ? Direction::AUTO : string_to_dir(direction),
                                                   data);
-
+  #warning remove
+  printf("moving_object start");
   auto moving_object = dynamic_cast<MovingObject*>(obj.get());
+  printf("moving_object end");
   if (!moving_object)
     throw std::runtime_error("Only MovingObject instances can be created via scripting.");
 

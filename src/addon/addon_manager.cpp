@@ -18,6 +18,11 @@
 #include "addon/addon_manager.hpp"
 
 #include <physfs.h>
+
+#ifdef SWITCH
+#define FMT_HEADER_ONLY
+#endif
+
 #include <fmt/format.h>
 #include <sstream>
 
@@ -844,7 +849,10 @@ AddonManager::add_installed_archive(const std::string& archive, const std::strin
             Dialog::show_message(fmt::format(_("Add-on {} by {} successfully installed."),
                                              addon_title, addon_author));
             // If currently opened menu is add-ons menu refresh it.
+            #warning remove
+            printf("addonmenu start");
             AddonMenu* addon_menu = dynamic_cast<AddonMenu*>(MenuManager::instance().current_menu());
+            printf("addonmenu end");
             if (addon_menu)
               addon_menu->refresh();
           }

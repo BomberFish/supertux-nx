@@ -7,7 +7,9 @@ if(TARGET fmt::fmt)
   message(STATUS "Found fmt")
 
   add_library(LibFmt ALIAS fmt::fmt)
-
+elseif(SWITCH)
+  message(STATUS "Building for Switch, using fmt in header-only mode")
+  include_directories(external/fmt/include) # We still need the actual header files
 else()
   message(STATUS "Could NOT find fmt, using external/fmt fallback")
 

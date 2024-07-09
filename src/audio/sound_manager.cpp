@@ -41,6 +41,7 @@ SoundManager::SoundManager() :
   m_music_volume(0),
   m_current_music()
 {
+  #ifndef SWITCH
   try {
     if (m_device == nullptr) {
       throw std::runtime_error("Couldn't open audio device.");
@@ -66,6 +67,10 @@ SoundManager::SoundManager() :
     log_warning << "Couldn't initialize audio device: " << e.what() << std::endl;
     print_openal_version();
   }
+  #else
+  m_sound_enabled = false;
+  m_music_enabled = false;
+  #endif
 }
 
 SoundManager::~SoundManager()
@@ -150,20 +155,24 @@ SoundManager::intern_create_sound_source(const std::string& filename)
 std::unique_ptr<SoundSource>
 SoundManager::create_sound_source(const std::string& filename)
 {
+  #ifndef SWITCH
   if (!m_sound_enabled)
     return create_dummy_sound_source();
-
   try {
     return intern_create_sound_source(filename);
   } catch(std::exception &e) {
     log_warning << "Couldn't create audio source: " << e.what() << std::endl;
     return create_dummy_sound_source();
   }
+  #else
+  return create_dummy_sound_source();
+  #endif
 }
 
 void
 SoundManager::preload(const std::string& filename)
 {
+  #ifndef SWITCH
   if (!m_sound_enabled)
     return;
 
@@ -182,6 +191,7 @@ SoundManager::preload(const std::string& filename)
   } catch(std::exception& e) {
     log_warning << "Error while preloading sound file: " << e.what() << std::endl;
   }
+  #endif
 }
 
 void

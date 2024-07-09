@@ -34,9 +34,18 @@
 #  include "video/gl/gl_video_system.hpp"
 #endif
 
+#warning Remove this soon
+#ifdef SWITCH
+#define SP(fmt, ...) printf(fmt, ##__VA_ARGS__)
+#else
+#define SP(fmt, ...)
+#endif
+
+
 std::unique_ptr<VideoSystem>
 VideoSystem::create(VideoSystem::Enum video_system)
 {
+  SP("VideoSystem::create\n");
   switch (video_system)
   {
     case VIDEO_AUTO:
@@ -98,6 +107,7 @@ VideoSystem::create(VideoSystem::Enum video_system)
 VideoSystem::Enum
 VideoSystem::get_video_system(const std::string &video)
 {
+  SP("VideoSystem::get_video_system\n");
   if (video == "auto")
   {
     return VIDEO_AUTO;
@@ -133,6 +143,7 @@ VideoSystem::get_video_system(const std::string &video)
 std::string
 VideoSystem::get_video_string(VideoSystem::Enum video)
 {
+  SP("VideoSystem::get_video_string\n");
   switch (video)
   {
     case VIDEO_AUTO:
@@ -155,6 +166,7 @@ VideoSystem::get_video_string(VideoSystem::Enum video)
 std::vector<std::string>
 VideoSystem::get_available_video_systems()
 {
+  SP("VideoSystem::get_available_video");
   std::vector<std::string> output;
   output.push_back("auto");
   output.push_back("sdl");
@@ -168,6 +180,7 @@ VideoSystem::get_available_video_systems()
 void
 VideoSystem::do_take_screenshot()
 {
+  SP("VideoSystem::do_take_screenshot\n");
   SDLSurfacePtr surface = make_screenshot();
   if (!surface) {
     log_warning << "Creating the screenshot has failed" << std::endl;

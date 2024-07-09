@@ -37,7 +37,6 @@ cmake_minimum_required(VERSION 3.1)
 
 project(SUPERTUX)
 
-
 ### CMake configuration
 
 if(COMMAND cmake_policy)
@@ -58,6 +57,7 @@ if(${PLATFORM} MATCHES "arm64")
 endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/mk/cmake)
+
 include(ConfigureFiles)
 include(ExternalProject)
 include(CheckCXXCompilerFlag)
@@ -117,7 +117,7 @@ if(EMSCRIPTEN)
 endif()
 
 # TODO: Add " OR ANDROID OR IOS" to this
-if(EMSCRIPTEN OR UBUNTU_TOUCH OR ANDROID)
+if(EMSCRIPTEN OR UBUNTU_TOUCH OR ANDROID OR SWITCH)
   option(REMOVE_QUIT_BUTTON "Remove the option to quit the game (useful on mobile devices)" ON)
 else()
   option(REMOVE_QUIT_BUTTON "Remove the option to quit the game (useful on mobile devices)" OFF)
@@ -133,8 +133,57 @@ set(VCPKG_APPLOCAL_DEPS ${VCPKG_BUILD} BOOL)
 # Detect mobile builds
 option(UBUNTU_TOUCH "Compile the project for an Ubuntu Touch target" OFF)
 
+option(SWITCH "Compile the project for the Nintendo Switch" OFF)
+
+# NX/Nintendo Switch builds
+if(SWITCH)
+  # add_compile_definitions(SWITCH) 
+
+  set(CMAKE_SYSTEM_NAME "Generic")
+  set(CMAKE_SYSTEM_VERSION "DKA-NX-14")
+  set(CMAKE_SYSTEM_PROCESSOR "aarch64")
+
+  set(DEVKITA64 "${DEVKITPRO}/devkitA64")
+  set(LIBNX "${DEVKITPRO}/libnx")
+  set(PORTLIBS "${DEVKITPRO}/portlibs/switch")
+
+  file(TO_CMAKE_PATH "$ENV{DEVKITPRO}" DEVKITPRO)
+  if(NOT IS_DIRECTORY ${DEVKITPRO})
+      message(FATAL_ERROR "Please install devkitA64 or set DEVKITPRO in your environment.")
+  endif()
+
+  # DevKitA64 doesn't support shared libraries, even though HOS does.
+  set_property(GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS FALSE)
+  
+  # Some extra compiler flags
+  set(ARCH "-march=armv8-a+crc+crypto -mtune=cortex-a57 -Og -g -ggdb -fsanitize=address -fsanitize-trap=all")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall ${ARCH}" CACHE STRING "C flags")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS}" CACHE STRING "C++ flags")
+  set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${ARCH}" CACHE STRING "ASM flags")
+  add_definitions(-DSWITCH -D__SWITCH__)
+
+  # These flags are purposefully empty to use the default flags when invoking the
+  # devkitA64 linker. Otherwise the linker may complain about duplicate flags.
+  set(CMAKE_EXE_LINKER_FLAGS "" CACHE STRING "Executable linker flags")
+  set(CMAKE_STATIC_LINKER_FLAGS "" CACHE STRING "Library linker flags")
+  set(CMAKE_MODULE_LINKER_FLAGS "" CACHE STRING "Module linker flags")
+
+  # Make cmake use dkp's pkg_config
+  set(PKG_CONFIG_EXECUTABLE ${DEVKITPRO}/portlibs/switch/bin/aarch64-none-elf-pkg-config)
+
+  # Enable portlibs (SDL2, etc.)
+  set(CMAKE_FIND_ROOT_PATH ${DEVKITPRO} ${DEVKITA64} ${PORTLIBS})
+  set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+  set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+  set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+  set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
+
+  set(CMAKE_INSTALL_PREFIX ${PORTLIBS} CACHE PATH "Install libraries to the portlibs directory")
+  set(CMAKE_PREFIX_PATH ${PORTLIBS} CACHE PATH "Find libraries in the portlibs directory")
+endif()
+
 # Mobile builds
-if(UBUNTU_TOUCH OR ANDROID)
+if(UBUNTU_TOUCH OR ANDROID OR SWITCH)
   option(HIDE_NONMOBILE_OPTIONS "Hide options that are impractical on mobile devices (e. g. changing screen resolution)" ON)
 else()
   option(HIDE_NONMOBILE_OPTIONS "Hide options that are impractical on mobile devices (e. g. changing screen resolution)" OFF)
@@ -268,7 +317,6 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "^ppc.*")
 endif()
 
 ## Link supertux binary with squirrel and other libraries
-
 target_link_libraries(supertux2_lib PUBLIC LibSquirrel)
 target_link_libraries(supertux2_lib PUBLIC LibSqstdlib)
 target_link_libraries(supertux2_lib PUBLIC LibTinygettext)
@@ -277,7 +325,9 @@ target_link_libraries(supertux2_lib PUBLIC LibSavePNG)
 target_link_libraries(supertux2_lib PUBLIC LibPartioZip)
 target_link_libraries(supertux2_lib PUBLIC LibOpenAL)
 target_link_libraries(supertux2_lib PUBLIC LibGlm)
-target_link_libraries(supertux2_lib PUBLIC LibFmt)
+if(NOT SWITCH) # We use FMT in header-only mode on NX...
+  target_link_libraries(supertux2_lib PUBLIC LibFmt)
+endif()
 target_link_libraries(supertux2_lib PUBLIC LibPhysfs)
 
 if(NOT EMSCRIPTEN)
@@ -293,6 +343,15 @@ endif()
 
 if(ENABLE_DISCORD)
   target_link_libraries(supertux2_lib PUBLIC LibDiscord)
+endif()
+
+if(SWITCH)
+  add_library(LibBz2 STATIC IMPORTED)
+  set_target_properties(LibBz2 PROPERTIES
+    IMPORTED_LOCATION ${DEVKITPRO}/portlibs/switch/lib/libbz2.a
+    INTERFACE_INCLUDE_DIRECTORIES ${DEVKITPRO}/portlibs/switch/include
+  )
+  target_link_libraries(supertux2_lib PUBLIC LibBz2)
 endif()
 
 ## Install stuff

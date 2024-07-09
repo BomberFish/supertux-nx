@@ -248,6 +248,7 @@ std::string escape_url(const std::string& url)
 #endif
 }
 
+// Might not work on NX? Needs testing.
 void open_url(const std::string& url)
 {
 #if SDL_VERSION_ATLEAST(2,0,14)

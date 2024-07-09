@@ -1,4 +1,9 @@
-option(USE_SYSTEM_SDL2_TTF "Use preinstalled SDL2_ttf if available" OFF)
+# if(SWITCH)
+#   option(USE_SYSTEM_SDL2_TTF "Use preinstalled SDL2_ttf if available" ON)
+# else()
+  option(USE_SYSTEM_SDL2_TTF "Use preinstalled SDL2_ttf if available" OFF)
+# endif()
+
 if(USE_SYSTEM_SDL2_TTF)
   find_package(SDL2_ttf QUIET)
 endif()
@@ -8,6 +13,14 @@ if (EMSCRIPTEN)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -sUSE_SDL_TTF=2")
   set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -sUSE_SDL_TTF=2")
   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -sUSE_SDL_TTF=2")
+# elseif(SWITCH)
+#   # Incredibly jank solution that probably doesn't even work
+#   add_library(LibSDL2_ttf STATIC IMPORTED)
+#   set_target_properties(LibSDL2_ttf PROPERTIES
+#     IMPORTED_LOCATION ${DEVKITPRO}/portlibs/switch/lib/libSDL2_ttf.a
+#     INTERFACE_INCLUDE_DIRECTORIES ${DEVKITPRO}/portlibs/switch/include/SDL2
+#   )
+#   add_dependencies(LibSDL2_ttf SDL2_ttf_project)
 elseif(TARGET SDL2_ttf)
   message(STATUS "Found preinstalled SDL2_ttf")
 

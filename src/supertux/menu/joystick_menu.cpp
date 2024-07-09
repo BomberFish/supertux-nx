@@ -120,7 +120,10 @@ JoystickMenu::menu_action(MenuItem& item)
 {
   if (0 <= item.get_id() && item.get_id() < static_cast<int>(Control::CONTROLCOUNT))
   {
+    #warning remove
+    printf("itemcontrolfield start");
     ItemControlField* micf = dynamic_cast<ItemControlField*>(&item);
+    printf("itemcontrolfield end");
     if (!micf) {
       return;
     }

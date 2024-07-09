@@ -60,6 +60,17 @@ else()
       IMPORTED_LOCATION "${SQUIRREL_PREFIX}/bin/${CMAKE_SHARED_LIBRARY_PREFIX}sqstdlib${CMAKE_SHARED_LIBRARY_SUFFIX}"
       IMPORTED_IMPLIB "${SQUIRREL_PREFIX}/lib/sqstdlib${CMAKE_LINK_LIBRARY_SUFFIX}"
       INTERFACE_INCLUDE_DIRECTORIES "${SQUIRREL_PREFIX}/include")
+  elseif(SWITCH)
+    # Work around some weird jank in an even jankier way
+    add_library(LibSquirrel STATIC IMPORTED)
+    set_target_properties(LibSquirrel PROPERTIES
+    IMPORTED_LOCATION "${SQUIRREL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}squirrel_static${CMAKE_STATIC_LIBRARY_SUFFIX}"
+    INTERFACE_INCLUDE_DIRECTORIES "${SQUIRREL_PREFIX}/include")
+
+    add_library(LibSqstdlib STATIC IMPORTED)
+    set_target_properties(LibSqstdlib PROPERTIES
+      IMPORTED_LOCATION "${SQUIRREL_PREFIX}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}sqstdlib_static${CMAKE_STATIC_LIBRARY_SUFFIX}"
+      INTERFACE_INCLUDE_DIRECTORIES "${SQUIRREL_PREFIX}/include")
   else()
     add_library(LibSquirrel STATIC IMPORTED)
     set_target_properties(LibSquirrel PROPERTIES

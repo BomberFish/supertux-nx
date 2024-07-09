@@ -18,6 +18,11 @@
 
 #include <physfs.h>
 #include <sstream>
+
+#ifdef SWITCH
+#define FMT_HEADER_ONLY
+#endif
+
 #include <fmt/format.h>
 
 #include "editor/editor.hpp"

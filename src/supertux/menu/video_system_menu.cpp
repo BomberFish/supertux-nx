@@ -16,6 +16,10 @@
 
 #include "supertux/menu/video_system_menu.hpp"
 
+#ifdef SWITCH
+#define FMT_HEADER_ONLY
+#endif
+
 #include <fmt/format.h>
 
 #include "gui/dialog.hpp"

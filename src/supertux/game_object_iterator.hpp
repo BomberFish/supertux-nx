@@ -35,7 +35,10 @@ public:
   {
     if (m_it != m_end)
     {
+      #warning remove
+      printf("gameobjectiterator start");
       m_object = dynamic_cast<T*>(m_it->get());
+      printf("gameobjectiterator end");
       if (!m_object)
       {
         skip_to_next();
