@@ -1,5 +1,6 @@
-if(EMSCRIPTEN)
+if(EMSCRIPTEN OR SWITCH)
   set(SQ_DISABLE_INSTALLER ON)
+  set(SSQ_BUILD_INSTALL OFF)
 endif()
 
 add_subdirectory("${CMAKE_SOURCE_DIR}/external/simplesquirrel/")
